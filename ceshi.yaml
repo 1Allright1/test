@@ -183,8 +183,8 @@ output:
     fields:
       particle_positions: true
       particle_velocities: true
-      particle_stresses: true # Enable stress tracking for limestone
-      particle_strains: true
+      particle_stresses: false # Enable stress tracking for limestone
+      particle_strains: false
       cutter_position: true
       cutter_velocity: true
       cutter_forces: true
