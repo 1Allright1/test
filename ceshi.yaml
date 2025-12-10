@@ -1,0 +1,202 @@
+# ============================================================================
+# Rock Cutting Simulation Configuration (Limestone Adaptation)
+# ============================================================================
+# Configuration for simulating PDC cutter cutting through limestone.
+# Adjusted based on limestone's mechanical properties: higher strength and stiffness.
+
+# ============================================================================
+# Simulation Settings - Time-Stepping Approach
+# ============================================================================
+simulation:
+  total_time: 3.0 # Total simulation time (seconds)
+  time_step: 5.0e-4 # Smaller time step for stiffer material stability
+  device: "cuda"
+
+  coupling:
+    max_collision_nodes: 1048576
+    enable_force_feedback: true
+    maintain_constant_velocity: true
+
+# ============================================================================
+# PDC Cutter Configuration
+# ============================================================================
+cutter:
+  kinematics:
+    cutting_velocity:
+      x: 0.0
+      y: 0.8 # Reduced cutting speed for harder rock
+      z: 0.0
+    angular_velocity:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    initial_position:
+      x: 0.0
+      y: -1.5
+      z: 0.65
+    initial_orientation:
+      w: 0.7071
+      x: 0.7071
+      y: 0.0
+      z: 0.0
+
+  physical:
+    mass: 150.0 # Increased mass for stability with harder rock
+
+  mechanical:
+    contact:
+      ke: 5.0e13 # Higher contact stiffness for harder material
+      mu: 0.35 # Slightly higher friction for rock-cutter interaction
+      projection_threshold: 0.0005 # Tighter penetration control
+
+  geometry:
+    type: "cylinder"
+    radius: 0.2
+    half_height: 0.1
+
+  constraints:
+    lock_orientation: true
+    lock_x_position: true
+    lock_z_position: true
+    allow_y_motion: false
+
+# ============================================================================
+# Limestone Material Configuration
+# ============================================================================
+rock:
+  geometry:
+    bounds:
+      x_min: -1.0
+      x_max: 1.0
+      y_min: -1.0
+      y_max: 1.0
+      z_min: 0.0
+      z_max: 0.5
+    voxel_size: 0.08 # Finer resolution for brittle behavior
+    particles_per_cell: 5
+    jitter_factor: 2.0
+
+  physical:
+    density: 2600.0 # Limestone density (2300-2700 kg/m³ typical)
+
+  mechanical:
+    elastic:
+      young_modulus: 6.0e10 # Limestone Young's modulus (30-80 GPa typical)
+      poisson_ratio: 0.28 # Typical Poisson's ratio for limestone
+
+    plastic:
+      yield_pressure: 3.0e6 # Higher yield pressure (limestone is stronger)
+      yield_stress: 8.0e6 # Higher yield stress (matches limestone's strength)
+      hardening: 0.1 # Slight hardening behavior
+      tensile_yield_ratio: 0.05 # Lower tensile yield ratio (brittle nature)
+      critical_fraction: 0.0
+
+    contact:
+      particle_mu: 0.6 # Higher inter-particle friction
+      particle_ke: 5.0e13 # Higher particle contact stiffness
+
+  boundaries:
+    base:
+      type: "fixed"
+      height_threshold: 0.05
+
+  visualization:
+    color: # Limestone color (light gray)
+      r: 0.8
+      g: 0.8
+      b: 0.75
+
+# ============================================================================
+# MPM Solver Configuration
+# ============================================================================
+mpm_solver:
+  grid:
+    type: "fixed"
+    padding: 10
+    max_active_cells: 32768
+
+  numerical:
+    transfer_scheme: "apic"
+    strain_basis: "P0"
+
+  solver:
+    type: "gauss-seidel"
+    max_iterations: 80 # More iterations for stiffer material convergence
+    tolerance: 5.0e-6 # Tighter tolerance
+
+  damping:
+    damping: 0.0
+    air_drag: 1.0
+    critical_fraction: 0.0
+
+# ============================================================================
+# XPBD Solver Configuration
+# ============================================================================
+xpbd_solver:
+  iterations: 30 # More iterations for rigid body stability
+  angular_damping: 0.02
+  linear_damping: 0.02
+
+# ============================================================================
+# Environment Configuration
+# ============================================================================
+environment:
+  gravity:
+    x: 0.0
+    y: 0.0
+    z: -10.0
+
+  ground_plane:
+    enabled: true
+    friction: 0.6 # Higher ground friction
+
+# ============================================================================
+# Visualization & Output Settings (Unchanged)
+# ============================================================================
+visualization:
+  viewer:
+    enabled: true
+    show_particles: true
+    show_bodies: true
+    show_contacts: false
+    show_stats: true
+    show_help: true
+
+  camera:
+    position:
+      x: 4.0
+      y: 4.0
+      z: 2.0
+    pitch: -10.0
+    yaw: -130.0
+    auto_follow: false
+
+output:
+  progress:
+    report_frequency: 100
+
+  export:
+    enabled: true
+    format: "vtu"
+    output_directory: "./output/limestone-cutting" # Updated directory
+    output_frequency: 100
+    fields:
+      particle_positions: true
+      particle_velocities: true
+      particle_stresses: true # Enable stress tracking for limestone
+      particle_strains: true
+      cutter_position: true
+      cutter_velocity: true
+      cutter_forces: true
+
+# ============================================================================
+# Advanced Settings
+# ============================================================================
+advanced:
+  stability:
+    enable_cfl_check: true # Enable CFL check for stiffer material
+    max_velocity: 100.0
+
+  performance:
+    use_adaptive_dt: true # Adaptive time step for efficiency
+    parallel_collision_detection: true
