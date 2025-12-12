@@ -24,7 +24,7 @@ cutter:
   kinematics:
     cutting_velocity:
       x: 0.0
-      y: 0.5 # Reduced cutting speed for harder rock
+      y: 0.8 # Reduced cutting speed for harder rock
       z: 0.0
     angular_velocity:
       x: 0.0
@@ -201,3 +201,4 @@ advanced:
     use_adaptive_dt: true # Adaptive time step for efficiency
 
     parallel_collision_detection: true
+
